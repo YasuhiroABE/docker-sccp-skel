@@ -6,7 +6,7 @@ DOCKER_IMAGE_VERSION = 1.0
 
 IMAGE_NAME = $(DOCKER_ID)/$(DOCKER_IMAGE)
 
-.PHONY: build build-prod push run stop push
+.PHONY: build build-prod push run stop check
 
 build:
 	sudo docker build . --tag $(IMAGE_NAME)
@@ -27,5 +27,6 @@ run:
 stop:
 	sudo docker stop $(NAME)
 
-push:
-	sudo docker push $(IMAGE_NAME)
+check:
+	sudo docker ps -f name=$(NAME)
+	sudo docker images $(IMAGE_NAME)
