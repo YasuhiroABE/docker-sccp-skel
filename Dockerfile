@@ -1,4 +1,6 @@
 
 FROM nginx:latest
 
-COPY ./htdocs /usr/share/nginx/html
+EXPOSE 80
+VOLUME ["/usr/share/nginx/html"]
+
