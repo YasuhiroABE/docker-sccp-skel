@@ -1,5 +1,6 @@
 
 DOCKER_CMD ?= podman
+DOCKER_OPT ?=   ## --security-opt label=disable for podman on selinux
 DOCKER_BUILDER ?= mabuilder
 
 NAME ?= mynginx
@@ -14,11 +15,11 @@ PROD_IMAGE_NAME := $(REGISTRY_SERVER)/$(REGISTRY_LIBRARY)/$(IMAGE_NAME)
 
 .PHONY: build
 build:
-	$(DOCKER_CMD) build . --tag $(DOCKER_IMAGE):latest
+	$(DOCKER_CMD) build . $(DOCKER_OPT) --tag $(DOCKER_IMAGE):latest
 
 .PHONY: build-prod
 build-prod:
-	$(DOCKER_CMD) build . --tag $(IMAGE_NAME) --no-cache
+	$(DOCKER_CMD) build . $(DOCKER_OPT) --pull --tag $(IMAGE_NAME) --no-cache
 
 .PHONY: tag
 tag:
@@ -30,7 +31,7 @@ push:
 
 .PHONY: run
 run:
-	sudo docker run -d --rm \
+	$(DOCKER_CMD) run -d --rm $(DOCKER_OPT) \
 	-e NGINX_PORT=80 \
 	-p 8080:80 \
 	--name $(NAME) \
@@ -39,12 +40,12 @@ run:
 
 .PHONY: stop
 stop:
-	sudo docker stop $(NAME)
+	$(DOCKER_CMD) stop $(NAME)
 
 .PHONY: check
 check:
-	sudo docker ps -f name=$(NAME)
-	sudo docker images $(IMAGE_NAME)
+	$(DOCKER_CMD) ps -f name=$(NAME)
+	$(DOCKER_CMD) images $(IMAGE_NAME)
 
 .PHONY: docker-buildx-init
 docker-buildx-init:
