@@ -1,5 +1,5 @@
 
-DOCKER_CMD ?= docker
+DOCKER_CMD ?= podman
 DOCKER_BUILDER ?= mabuilder
 
 NAME ?= mynginx
@@ -8,7 +8,7 @@ DOCKER_IMAGE ?= mynginx
 DOCKER_IMAGE_VERSION ?= 1.0
 IMAGE_NAME := $(DOCKER_IMAGE):$(DOCKER_IMAGE_VERSION)
 
-REGISTRY_SERVER ?= docker.io
+REGISTRY_SERVER ?= inovtst9.u-aizu.ac.jp
 REGISTRY_LIBRARY ?= $(shell id -un)
 PROD_IMAGE_NAME := $(REGISTRY_SERVER)/$(REGISTRY_LIBRARY)/$(IMAGE_NAME)
 
