@@ -18,3 +18,6 @@ A docker skeleton directory which can be used for testing build, run, and push o
     See the License for the specific language governing permissions and
     limitations under the License.
 
+# Change History
+
+* 2024/07/04 Replaced the name "mynginx" with "my-nginx" of Makefile

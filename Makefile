@@ -3,9 +3,9 @@ DOCKER_CMD ?= podman
 DOCKER_OPT ?=   ## --security-opt label=disable for podman on selinux
 DOCKER_BUILDER ?= mabuilder
 
-NAME ?= mynginx
+NAME ?= my-nginx
 DOCKER_ID ?= $(shell id -un)
-DOCKER_IMAGE ?= mynginx
+DOCKER_IMAGE ?= my-nginx
 DOCKER_IMAGE_VERSION ?= 1.0
 IMAGE_NAME := $(DOCKER_IMAGE):$(DOCKER_IMAGE_VERSION)
 
