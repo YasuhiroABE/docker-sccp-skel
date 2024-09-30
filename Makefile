@@ -2,24 +2,28 @@
 DOCKER_CMD ?= podman
 DOCKER_OPT ?=   ## --security-opt label=disable for podman on selinux
 DOCKER_BUILDER ?= mabuilder
+DOCKER_PLATFORM ?= linux/amd64
+DOCKER_PLATFORMS ?= linux/amd64,linux/arm64
 
 NAME ?= my-nginx
-DOCKER_ID ?= $(shell id -un)
 DOCKER_IMAGE ?= my-nginx
-DOCKER_IMAGE_VERSION ?= 1.0
+DOCKER_IMAGE_VERSION ?= 1.0.0
 IMAGE_NAME := $(DOCKER_IMAGE):$(DOCKER_IMAGE_VERSION)
 
 REGISTRY_SERVER ?= inovtst9.u-aizu.ac.jp
 REGISTRY_LIBRARY ?= $(shell id -un)
 PROD_IMAGE_NAME := $(REGISTRY_SERVER)/$(REGISTRY_LIBRARY)/$(IMAGE_NAME)
 
+NGINX_PORT ?= 80
+DOCKER_PORT ?= 8080
+
 .PHONY: build
 build:
-	$(DOCKER_CMD) build . $(DOCKER_OPT) --tag $(DOCKER_IMAGE):latest
+	$(DOCKER_CMD) build . $(DOCKER_OPT) --tag $(DOCKER_IMAGE) --platform $(DOCKER_PLATFORM)
 
 .PHONY: build-prod
 build-prod:
-	$(DOCKER_CMD) build . $(DOCKER_OPT) --pull --tag $(IMAGE_NAME) --no-cache
+	$(DOCKER_CMD) build . $(DOCKER_OPT) --pull --tag $(IMAGE_NAME) --no-cache --platform $(DOCKER_PLATFORM)
 
 .PHONY: tag
 tag:
@@ -32,11 +36,12 @@ push:
 .PHONY: run
 run:
 	$(DOCKER_CMD) run -d --rm $(DOCKER_OPT) \
-	-e NGINX_PORT=80 \
-	-p 8080:80 \
+	-e NGINX_PORT=$(NGINX_PORT) \
+	-p $(DOCKER_PORT):$(NGINX_PORT) \
 	--name $(NAME) \
+	--platform $(DOCKER_PLATFORM) \
 	-v `pwd`/htdocs:/usr/share/nginx/html \
-	$(IMAGE_NAME)
+	$(DOCKER_IMAGE)
 
 .PHONY: stop
 stop:
@@ -58,7 +63,7 @@ docker-buildx-setup:
 
 .PHONY: docker-buildx-prod
 docker-buildx-prod:
-	$(DOCKER_CMD) buildx build --platform linux/amd64,linux/arm64 --tag $(PROD_IMAGE_NAME) --no-cache --push .
+	$(DOCKER_CMD) buildx build --platform $(DOCKER_PLATFORMS) --tag $(PROD_IMAGE_NAME) --no-cache --push .
 
 .PHONY: docker-runx
 docker-runx:
@@ -67,3 +72,20 @@ docker-runx:
 		-p $(PORT):8080 \
 		--name $(NAME) \
 		$(PROD_IMAGE_NAME)
+
+.PHONY: podman-buildx-init
+podman-buildx-init:
+	$(DOCKER_CMD) manifest create $(DOCKER_IMAGE)
+
+.PHONY: podman-buildx
+podman-buildx:
+	$(DOCKER_CMD) build . $(DOCKER_OPT) --tag $(DOCKER_IMAGE):latest --platform $(DOCKER_PLATFORMS)
+
+.PHONY: podman-buildx-prod
+podman-buildx-prod:
+	$(DOCKER_CMD) manifest $(DOCKER_OPT) rm $(PROD_IMAGE_NAME) || true
+	$(DOCKER_CMD) build . $(DOCKER_OPT) --pull --tag $(DOCKER_IMAGE):$(DOCKER_IMAGE_VERSION) --no-cache --platform $(DOCKER_PLATFORMS) --manifest $(PROD_IMAGE_NAME)
+
+.PHONY: podman-buildx-push
+podman-buildx-push:
+	$(DOCKER_CMD) manifest push $(DOCKER_OPT) $(PROD_IMAGE_NAME)
