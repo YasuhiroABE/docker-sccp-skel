@@ -75,7 +75,8 @@ docker-runx:
 
 .PHONY: podman-buildx-init
 podman-buildx-init:
-	$(DOCKER_CMD) manifest create $(DOCKER_IMAGE)
+	$(DOCKER_CMD) rmi $(IMAGE_NAME) || true
+	$(DOCKER_CMD) manifest create $(IMAGE_NAME)
 
 .PHONY: podman-buildx
 podman-buildx:
