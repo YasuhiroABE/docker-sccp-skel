@@ -45,7 +45,7 @@ run:
 
 .PHONY: stop
 stop:
-	$(DOCKER_CMD) stop $(NAME)
+	$(DOCKER_CMD) $(DOCKER_OPT) stop $(NAME)
 
 .PHONY: check
 check:
@@ -54,23 +54,25 @@ check:
 
 .PHONY: docker-buildx-init
 docker-buildx-init:
-	$(DOCKER_CMD) buildx create --name $(DOCKER_BUILDER) --use
+	$(DOCKER_CMD) buildx create --name $(DOCKER_BUILDER) --use $(DOCKER_OPT)
 
 .PHONY: docker-buildx-setup
 docker-buildx-setup:
-	$(DOCKER_CMD) buildx use $(DOCKER_BUILDER)
-	$(DOCKER_CMD) buildx inspect --bootstrap
+	$(DOCKER_CMD) buildx use $(DOCKER_BUILDER) $(DOCKER_OPT)
+	$(DOCKER_CMD) buildx inspect --bootstrap $(DOCKER_OPT)
 
 .PHONY: docker-buildx-prod
 docker-buildx-prod:
-	$(DOCKER_CMD) buildx build --platform $(DOCKER_PLATFORMS) --tag $(PROD_IMAGE_NAME) --no-cache --push .
+	$(DOCKER_CMD) buildx build --platform $(DOCKER_PLATFORMS) --tag $(PROD_IMAGE_NAME) --no-cache --push . $(DOCKER_OPT)
 
 .PHONY: docker-runx
 docker-runx:
 	$(DOCKER_CMD) run -it --rm  \
+		$(DOCKER_OPT) \
 		--env LC_CTYPE=ja_JP.UTF-8 \
 		-p $(PORT):8080 \
 		--name $(NAME) \
+		--platform $(DOCKER_PLATFORM) \
 		$(PROD_IMAGE_NAME)
 
 .PHONY: podman-buildx-init
@@ -80,13 +82,13 @@ podman-buildx-init:
 
 .PHONY: podman-buildx
 podman-buildx:
-	$(DOCKER_CMD) build . $(DOCKER_OPT) --tag $(DOCKER_IMAGE):latest --platform $(DOCKER_PLATFORMS)
+	$(DOCKER_CMD) build . $(DOCKER_OPT) --tag $(DOCKER_IMAGE) --platform $(DOCKER_PLATFORMS)
 
 .PHONY: podman-buildx-prod
 podman-buildx-prod:
 	$(DOCKER_CMD) manifest $(DOCKER_OPT) rm $(PROD_IMAGE_NAME) || true
-	$(DOCKER_CMD) build . $(DOCKER_OPT) --pull --tag $(DOCKER_IMAGE):$(DOCKER_IMAGE_VERSION) --no-cache --platform $(DOCKER_PLATFORMS) --manifest $(PROD_IMAGE_NAME)
+	$(DOCKER_CMD) build . $(DOCKER_OPT) --pull --no-cache --platform $(DOCKER_PLATFORMS) --manifest $(IMAGE_NAME)
 
 .PHONY: podman-buildx-push
 podman-buildx-push:
-	$(DOCKER_CMD) manifest push $(DOCKER_OPT) $(PROD_IMAGE_NAME)
+	$(DOCKER_CMD) manifest push $(DOCKER_OPT) $(IMAGE_NAME) $(PROD_IMAGE_NAME)
