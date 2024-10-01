@@ -63,7 +63,7 @@ docker-buildx-setup:
 
 .PHONY: docker-buildx-prod
 docker-buildx-prod:
-	$(DOCKER_CMD) buildx build --platform $(DOCKER_PLATFORMS) --tag $(PROD_IMAGE_NAME) --no-cache --push . $(DOCKER_OPT)
+	$(DOCKER_CMD) buildx build --platform $(DOCKER_PLATFORMS) --tag $(PROD_IMAGE_NAME) --no-cache --push .
 
 .PHONY: docker-runx
 docker-runx:
@@ -91,4 +91,4 @@ podman-buildx-prod:
 
 .PHONY: podman-buildx-push
 podman-buildx-push:
-	$(DOCKER_CMD) manifest push $(DOCKER_OPT) $(IMAGE_NAME) $(PROD_IMAGE_NAME)
+	$(DOCKER_CMD) manifest push $(IMAGE_NAME) $(PROD_IMAGE_NAME)
